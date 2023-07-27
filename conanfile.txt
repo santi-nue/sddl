@@ -1,0 +1,9 @@
+[requires]
+TBB/2019_U4@conan/stable
+libarchive/3.4.0
+
+[options]
+TBB:shared=True
+
+[generators]
+cmake
