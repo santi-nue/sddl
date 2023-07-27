@@ -47,7 +47,7 @@ jobs:
         run: echo "${{ steps.conan.outputs.version }}"
 
       - name: Conan 
-        run: conan profile settings.compiler="Visual Studio" default
+        run: conan profile detect --force
 
       - name: Conan install
         run: conan install .
