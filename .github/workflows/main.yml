@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2019]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+
+
+      # WINDOWS
+      - name: Cache conan
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache@v1
+        with:
+          key: ${{ runner.os }}-conan-root-${{ hashFiles('**/conanfile.txt') }}
+          path: ~/.conan
+
+      - name: Cache conan packages
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache@v1
+        with:
+          key: ${{ runner.os }}-conan-pkg-${{ hashFiles('**/conanfile.txt') }}
+          path: C:/.conan/
+
+      - name: Install dependencies (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+            REM We use this source (temporarily?) until choco has updated their version of conan
+            choco install conan -y -s="https://api.bintray.com/nuget/anotherfoxguy/choco-pkg"
+            refreshenv
+        shell: cmd
+
+      - name: Build (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+            call "%programfiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+            mkdir build
+            cd build
+            "C:\Program Files\Conan\conan\conan.exe" install .. --build
+            cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_VERBOSE_MAKEFILE=true -DCMAKE_CONFIGURATION_TYPES=Release ..
+            msbuild.exe conan-test2.vcxproj /p:Configuration=Release /p:AdditionalIncludePaths=%CONAN_INCLUDE_DIRS_TBB%
+            echo %CONAN_LIB_DIRS%
+            7z a conan-test2.zip D:/a/conan-test2/
+        shell: cmd
+
+      - name: Upload artifact (Windows)
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v1
+        with:
+          name: conan-test2.zip
+          path: build/conan-test2.zip
