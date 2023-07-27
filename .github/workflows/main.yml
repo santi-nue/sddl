@@ -39,14 +39,12 @@ jobs:
           key: ${{ runner.os }}-conan-pkg-${{ hashFiles('**/conanfile.txt') }}
           path: C:/.conan/
 
-      - name: Install dependencies (Windows)
-        if: startsWith(matrix.os, 'windows')
-        run: |
-            REM We use this source (temporarily?) until choco has updated their version of conan
-            # choco install conan -y -s="https://api.bintray.com/nuget/anotherfoxguy/choco-pkg"
-            python -m pip install conan            
-            refreshenv
-        shell: cmd
+      - name: Install Conan
+        id: conan
+        uses: turtlebrowser/get-conan@main
+
+      - name: Conan version
+        run: echo "${{ steps.conan.outputs.version }}"
 
       - name: Build (Windows)
         if: startsWith(matrix.os, 'windows')
