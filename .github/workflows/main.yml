@@ -46,6 +46,9 @@ jobs:
       - name: Conan version
         run: echo "${{ steps.conan.outputs.version }}"
 
+      - name: Conan install
+        run: conan install .
+ 
       - name: Build (Windows)
         if: startsWith(matrix.os, 'windows')
         run: |
