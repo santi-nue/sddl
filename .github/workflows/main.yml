@@ -46,6 +46,9 @@ jobs:
       - name: Conan version
         run: echo "${{ steps.conan.outputs.version }}"
 
+      - name: Conan 
+        run: conan profile new default --detect
+
       - name: Conan install
         run: conan install .
  
